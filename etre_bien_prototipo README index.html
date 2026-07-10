@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>être bien — prototipo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F5EFE6; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+
+    .phone-wrap { display: flex; justify-content: center; padding: 2rem 1rem; }
+
+    .phone { width: 320px; min-height: 620px; background: #FDF8F2; border-radius: 36px; border: 1px solid #E8D8C8; overflow: hidden; position: relative; display: flex; flex-direction: column; box-shadow: 0 8px 40px rgba(0,0,0,0.10); }
+
+    .screen { flex: 1; display: flex; flex-direction: column; position: relative; }
+
+    .screen-page { position: absolute; inset: 0; display: flex; flex-direction: column; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
+
+    .screen-page.active { opacity: 1; pointer-events: all; }
+
+    .status-bar { display: flex; justify-content: space-between; padding: 12px 20px 4px; font-size: 11px; color: #A08070; }
+
+    .page-home { background: #FDF8F2; }
+
+    .home-header { padding: 48px 28px 24px; text-align: center; }
+
+    .home-title { font-size: 28px; font-weight: 500; color: #6B4F3A; letter-spacing: 0.5px; margin-bottom: 4px; }
+
+    .home-sub { font-size: 13px; color: #A08070; }
+
+    .home-greeting { padding: 0 28px 12px; display: flex; justify-content: center; }
+
+    .home-greeting strong { font-size: 13px; font-weight: 400; color: #A08070; background: #F0E0D0; padding: 6px 18px; border-radius: 999px; letter-spacing: 0.2px; }
+
+    .home-card-area { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px 24px; }
+
+    .pull-card-btn { width: 100%; padding: 48px 20px 40px; background: #FFF9F4; border-radius: 20px; border: 0.5px solid #E8D8C8; cursor: pointer; text-align: center; transition: background 0.2s; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+
+    .pull-card-btn:hover { background: #FFF3EB; }
+
+    .card-icon { width: 48px; height: 48px; border-radius: 50%; background: #F0E0D0; display: flex; align-items: center; justify-content: center; }
+
+    .card-icon svg { width: 22px; height: 22px; }
+
+    .pull-card-btn span { font-size: 14px; color: #8B6A52; }
+
+    .pull-card-btn small { font-size: 12px; color: #BFA090; }
+
+    .home-nav { display: flex; justify-content: space-around; padding: 16px 24px 24px; border-top: 0.5px solid #E8D8C8; background: #FDF8F2; }
+
+    .nav-btn { background: none; border: none; cursor: pointer; padding: 8px 12px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: background 0.2s; }
+
+    .nav-btn:hover { background: #F0E0D0; }
+
+    .nav-btn svg { width: 20px; height: 20px; }
+
+    .nav-btn span { font-size: 10px; color: #A08070; }
+
+    .nav-btn.active span { color: #6B4F3A; }
+
+    .page-card { background: #FDF8F2; }
+
+    .card-header { padding: 40px 28px 20px; display: flex; justify-content: space-between; align-items: flex-start; }
+
+    .card-type-badge { font-size: 11px; padding: 4px 10px; border-radius: 20px; background: #F0E0D0; color: #8B6A52; }
+
+    .card-close { background: none; border: none; cursor: pointer; color: #BFA090; font-size: 18px; line-height: 1; }
+
+    .card-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 32px 40px; text-align: center; }
+
+    .card-visual { width: 80px; height: 80px; border-radius: 50%; background: #F0E0D0; display: flex; align-items: center; justify-content: center; margin-bottom: 28px; }
+
+    .card-visual svg { width: 36px; height: 36px; }
+
+    .card-text { font-size: 18px; line-height: 1.6; color: #6B4F3A; font-weight: 400; margin-bottom: 12px; }
+
+    .card-hint { font-size: 13px; color: #A08070; line-height: 1.5; }
+
+    .card-actions { padding: 0 24px 32px; display: flex; gap: 10px; }
+
+    .btn-secondary { flex: 1; padding: 13px; border-radius: 14px; border: 0.5px solid #E8D8C8; background: transparent; font-size: 13px; color: #8B6A52; cursor: pointer; transition: background 0.2s; }
+
+    .btn-secondary:hover { background: #F0E0D0; }
+
+    .btn-primary { flex: 2; padding: 13px; border-radius: 14px; border: none; background: #C4845A; font-size: 13px; color: #FFF9F4; cursor: pointer; font-weight: 500; transition: background 0.2s; }
+
+    .btn-primary:hover { background: #B37448; }
+
+    .page-settings { background: #FDF8F2; }
+
+    .settings-header { padding: 48px 28px 24px; }
+
+    .settings-header h2 { font-size: 20px; font-weight: 500; color: #6B4F3A; margin-bottom: 4px; }
+
+    .settings-header p { font-size: 13px; color: #A08070; }
+
+    .settings-body { flex: 1; padding: 0 24px; display: flex; flex-direction: column; gap: 12px; }
+
+    .settings-section { background: #FFF9F4; border-radius: 16px; border: 0.5px solid #E8D8C8; overflow: hidden; }
+
+    .settings-section-title { padding: 12px 16px 8px; font-size: 11px; color: #BFA090; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .settings-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-top: 0.5px solid #EEE0D0; }
+
+    .settings-row-label { font-size: 14px; color: #6B4F3A; }
+
+    .settings-row-sub { font-size: 12px; color: #A08070; }
+
+    .toggle { width: 40px; height: 24px; border-radius: 12px; background: #E8D8C8; border: none; cursor: pointer; position: relative; transition: background 0.25s; flex-shrink: 0; }
+
+    .toggle.on { background: #C4845A; }
+
+    .toggle::after { content: ''; position: absolute; width: 18px; height: 18px; border-radius: 50%; background: white; top: 3px; left: 3px; transition: left 0.25s; }
+
+    .toggle.on::after { left: 19px; }
+
+    .time-select { font-size: 13px; color: #8B6A52; background: #F0E0D0; border: none; border-radius: 8px; padding: 4px 8px; cursor: pointer; }
+
+    .page-history { background: #FDF8F2; }
+
+    .history-header { padding: 48px 28px 20px; }
+
+    .history-header h2 { font-size: 20px; font-weight: 500; color: #6B4F3A; margin-bottom: 4px; }
+
+    .history-header p { font-size: 13px; color: #A08070; }
+
+    .history-list { flex: 1; padding: 0 24px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+
+    .history-item { background: #FFF9F4; border-radius: 14px; border: 0.5px solid #E8D8C8; padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; }
+
+    .history-dot { width: 32px; height: 32px; border-radius: 50%; background: #F0E0D0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+
+    .history-dot svg { width: 15px; height: 15px; }
+
+    .history-text { flex: 1; }
+
+    .history-text p { font-size: 13px; color: #6B4F3A; line-height: 1.5; margin-bottom: 4px; }
+
+    .history-date { font-size: 11px; color: #BFA090; }
+
+    .done-tag { font-size: 10px; padding: 2px 8px; border-radius: 10px; background: #E8D8C8; color: #8B6A52; }
+
+    .page-splash { background: #C4845A; justify-content: center; align-items: center; gap: 16px; }
+    .splash-title { font-size: 34px; font-weight: 400; color: #FDF8F2; letter-spacing: 1px; opacity: 0; animation: fadeUp 0.8s ease 0.4s forwards; }
+    .splash-sub { font-size: 13px; color: #F5E4D4; letter-spacing: 0.5px; opacity: 0; animation: fadeUp 0.8s ease 0.8s forwards; }
+    .splash-dot { width: 6px; height: 6px; border-radius: 50%; background: #FDF8F2; opacity: 0.4; animation: pulse 1.2s ease-in-out infinite; }
+    .splash-dots { display: flex; gap: 6px; margin-top: 32px; opacity: 0; animation: fadeUp 0.6s ease 1.2s forwards; }
+    .splash-dot:nth-child(2) { animation-delay: 0.2s; }
+    .splash-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.1); } }
+
+    .page-welcome { background: #FDF8F2; justify-content: space-between; }
+    .welcome-hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 28px 0; text-align: center; gap: 16px; }
+    .welcome-orb { width: 100px; height: 100px; border-radius: 50%; background: #F0E0D0; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+    .welcome-orb svg { width: 48px; height: 48px; }
+    .welcome-title { font-size: 30px; font-weight: 400; color: #6B4F3A; letter-spacing: 0.5px; }
+    .welcome-body { font-size: 14px; color: #A08070; line-height: 1.7; }
+    .welcome-footer { padding: 24px; display: flex; flex-direction: column; gap: 10px; }
+    .btn-full { width: 100%; padding: 14px; border-radius: 16px; font-size: 14px; font-weight: 500; cursor: pointer; border: none; transition: background 0.2s, opacity 0.2s; }
+    .btn-terra { background: #C4845A; color: #FFF9F4; }
+    .btn-terra:hover { background: #B37448; }
+    .btn-outline { background: transparent; color: #8B6A52; border: 0.5px solid #D4B8A0; }
+    .btn-outline:hover { background: #F0E0D0; }
+
+    .page-auth { background: #FDF8F2; }
+    .auth-header { padding: 40px 28px 20px; }
+    .auth-header h2 { font-size: 20px; font-weight: 500; color: #6B4F3A; margin-bottom: 4px; }
+    .auth-header p { font-size: 13px; color: #A08070; }
+    .auth-tabs { display: flex; margin: 0 24px 20px; background: #F0E0D0; border-radius: 12px; padding: 3px; }
+    .auth-tab { flex: 1; padding: 8px; font-size: 13px; border: none; border-radius: 10px; cursor: pointer; background: transparent; color: #A08070; transition: all 0.2s; }
+    .auth-tab.active { background: #FDF8F2; color: #6B4F3A; font-weight: 500; }
+    .auth-body { padding: 0 24px; display: flex; flex-direction: column; gap: 12px; }
+    .auth-field { display: flex; flex-direction: column; gap: 6px; }
+    .auth-field label { font-size: 12px; color: #A08070; letter-spacing: 0.3px; }
+    .auth-field input { padding: 12px 14px; border-radius: 12px; border: 0.5px solid #E8D8C8; background: #FFF9F4; font-size: 14px; color: #6B4F3A; outline: none; transition: border 0.2s; font-family: inherit; }
+    .auth-field input:focus { border-color: #C4845A; }
+    .auth-field input::placeholder { color: #C8A898; }
+    .auth-footer { padding: 20px 24px 32px; display: flex; flex-direction: column; gap: 10px; }
+    .auth-divider { text-align: center; font-size: 12px; color: #BFA090; }
+    .btn-ghost { background: none; border: none; font-size: 13px; color: #A08070; cursor: pointer; padding: 4px; text-decoration: underline; text-underline-offset: 3px; }
+  </style>
+</head>
+<body>
+<div class="phone-wrap">
+  <div class="phone">
+    <div class="screen">
+
+      <div class="screen-page page-splash active" id="p-splash">
+        <div class="splash-title">être bien</div>
+        <div class="splash-sub">un momento para vos</div>
+        <div class="splash-dots">
+          <div class="splash-dot"></div>
+          <div class="splash-dot"></div>
+          <div class="splash-dot"></div>
+        </div>
+      </div>
+
+      <div class="screen-page page-welcome" id="p-welcome">
+        <div class="status-bar" style="color:#C8A898;"><span>9:41</span><span>···</span></div>
+        <div class="welcome-hero">
+          <div class="welcome-orb">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#8B6A52" stroke-width="1.2">
+              <path d="M12 3C8 3 5 6 5 10c0 5 4 8 6 10l1 1 1-1c2-2 6-5 6-10 0-4-3-7-7-7z"/>
+              <circle cx="12" cy="10" r="2.5"/>
+            </svg>
+          </div>
+          <div class="welcome-title">être bien</div>
+          <div class="welcome-body">un espacio suave para pausar,<br>sentir y volver a vos.</div>
+        </div>
+        <div class="welcome-footer">
+          <button class="btn-full btn-terra" onclick="goTo('auth'); setAuthMode('registro')">comenzar</button>
+          <button class="btn-full btn-outline" onclick="goTo('auth'); setAuthMode('ingreso')">ya tengo cuenta</button>
+        </div>
+      </div>
+
+      <div class="screen-page page-auth" id="p-auth">
+        <div class="status-bar"><span>9:41</span><span>···</span></div>
+        <div class="auth-header">
+          <h2 id="auth-title">crear cuenta</h2>
+          <p id="auth-sub">para guardar tus cartas y preferencias</p>
+        </div>
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tab-registro" onclick="setAuthMode('registro')">registro</button>
+          <button class="auth-tab" id="tab-ingreso" onclick="setAuthMode('ingreso')">ingresar</button>
+        </div>
+        <div class="auth-body" id="auth-body">
+          <div class="auth-field" id="field-nombre">
+            <label>nombre</label>
+            <input type="text" placeholder="¿cómo te llamás?" />
+          </div>
+          <div class="auth-field">
+            <label>correo</label>
+            <input type="email" placeholder="tu@correo.com" />
+          </div>
+          <div class="auth-field">
+            <label>contraseña</label>
+            <input type="password" placeholder="········" />
+          </div>
+        </div>
+        <div class="auth-footer">
+          <button class="btn-full btn-terra" id="auth-cta" onclick="goTo('home')">crear mi cuenta</button>
+          <div class="auth-divider">o</div>
+          <button class="btn-ghost" onclick="goTo('home')">continuar sin cuenta</button>
+        </div>
+      </div>
+
+      <div class="screen-page page-home" id="p-home">
+        <div class="status-bar"><span>9:41</span><span>···</span></div>
+        <div class="home-header">
+          <div class="home-title">être bien</div>
+          <div class="home-sub">un momento para vos</div>
+        </div>
+        <div class="home-greeting">
+          <strong>Bienvenida, Marcela</strong>
+        </div>
+        <div class="home-card-area">
+          <button class="pull-card-btn" onclick="showCard()">
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#8B6A52" stroke-width="1.5">
+                <rect x="4" y="3" width="16" height="18" rx="3"/>
+                <line x1="8" y1="8" x2="16" y2="8"/>
+                <line x1="8" y1="12" x2="14" y2="12"/>
+              </svg>
+            </div>
+            <span>sacar una carta</span>
+            <small>toca cuando lo necesites</small>
+          </button>
+        </div>
+        <div class="home-nav">
+          <button class="nav-btn active" onclick="goTo('home')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#6B4F3A" stroke-width="1.5"><path d="M3 12L12 4l9 8"/><path d="M5 10v9a1 1 0 001 1h4v-4h4v4h4a1 1 0 001-1v-9"/></svg>
+            <span>inicio</span>
+          </button>
+          <button class="nav-btn" onclick="goTo('history')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#A08070" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+            <span>mis cartas</span>
+          </button>
+          <button class="nav-btn" onclick="goTo('settings')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#A08070" stroke-width="1.5"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+            <span>configurar</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="screen-page page-card" id="p-card">
+        <div class="status-bar"><span>9:41</span><span>···</span></div>
+        <div class="card-header">
+          <span class="card-type-badge" id="card-badge">acción pequeña</span>
+          <button class="card-close" onclick="goTo('home')">×</button>
+        </div>
+        <div class="card-content">
+          <div class="card-visual">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#8B6A52" stroke-width="1.5" id="card-svg">
+              <path d="M17 8C8 10 5.9 16.17 3.82 19.33a1 1 0 001.64 1.14C7 18.9 8.5 17 12 16c-1 3 1 5 3 6 0-3 2.5-4.5 4-6 1.5-1.5 2-3.5 2-5 0-3-2-5.5-4-7z"/>
+            </svg>
+          </div>
+          <p class="card-text" id="card-text">salí a caminar sin rumbo fijo. dejá que tus pies elijan.</p>
+          <p class="card-hint" id="card-hint">no hay un destino correcto ni incorrecto hoy.</p>
+        </div>
+        <div class="card-actions">
+          <button class="btn-secondary" onclick="showCard()">otra carta</button>
+          <button class="btn-primary" onclick="markDone()">la tomo</button>
+        </div>
+      </div>
+
+      <div class="screen-page page-settings" id="p-settings">
+        <div class="status-bar"><span>9:41</span><span>···</span></div>
+        <div class="settings-header">
+          <h2>cómo querés que te acompañe</h2>
+          <p>configurá tu experiencia</p>
+        </div>
+        <div class="settings-body">
+          <div class="settings-section">
+            <div class="settings-section-title">recordatorio suave</div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">recibir un ¿cómo estás?</div>
+                <div class="settings-row-sub">un toque gentil durante el día</div>
+              </div>
+              <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-label">horario</div>
+              <select class="time-select">
+                <option>mañana (9:00)</option>
+                <option>mediodía (13:00)</option>
+                <option selected>tarde (17:00)</option>
+                <option>noche (21:00)</option>
+              </select>
+            </div>
+          </div>
+          <div class="settings-section">
+            <div class="settings-section-title">tipo de cartas</div>
+            <div class="settings-row">
+              <div class="settings-row-label">acciones pequeñas</div>
+              <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-label">recuerdos</div>
+              <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-label">frases poéticas</div>
+              <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-label">invitaciones sensoriales</div>
+              <button class="toggle" onclick="this.classList.toggle('on')"></button>
+            </div>
+          </div>
+        </div>
+        <div class="home-nav" style="margin-top:auto;">
+          <button class="nav-btn" onclick="goTo('home')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#A08070" stroke-width="1.5"><path d="M3 12L12 4l9 8"/><path d="M5 10v9a1 1 0 001 1h4v-4h4v4h4a1 1 0 001-1v-9"/></svg>
+            <span>inicio</span>
+          </button>
+          <button class="nav-btn" onclick="goTo('history')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#A08070" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+            <span>mis cartas</span>
+          </button>
+          <button class="nav-btn active" onclick="goTo('settings')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#6B4F3A" stroke-width="1.5"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+            <span>configurar</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="screen-page page-history" id="p-history">
+        <div class="status-bar"><span>9:41</span><span>···</span></div>
+        <div class="history-header">
+          <h2>tus cartas</h2>
+          <p>lo que fuiste tomando</p>
+        </div>
+        <div class="history-list" id="history-list">
+          <div class="history-item">
+            <div class="history-dot">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#8B6A52" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+            </div>
+            <div class="history-text">
+              <p>recordá la última vez que te reíste hasta llorar.</p>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+                <span class="history-date">ayer, 17:02</span>
+                <span class="done-tag">tomada</span>
+              </div>
+            </div>
+          </div>
+          <div class="history-item">
+            <div class="history-dot">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#8B6A52" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+            </div>
+            <div class="history-text">
+              <p>escuchá el sonido más lejano que puedas percibir ahora.</p>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+                <span class="history-date">lunes, 9:15</span>
+                <span class="done-tag">tomada</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="home-nav" style="margin-top:auto;">
+          <button class="nav-btn" onclick="goTo('home')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#A08070" stroke-width="1.5"><path d="M3 12L12 4l9 8"/><path d="M5 10v9a1 1 0 001 1h4v-4h4v4h4a1 1 0 001-1v-9"/></svg>
+            <span>inicio</span>
+          </button>
+          <button class="nav-btn active" onclick="goTo('history')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#6B4F3A" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+            <span>mis cartas</span>
+          </button>
+          <button class="nav-btn" onclick="goTo('settings')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#A08070" stroke-width="1.5"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+            <span>configurar</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const cards = [
+  { type: "acción pequeña", text: "salí a caminar sin rumbo fijo. dejá que tus pies elijan.", hint: "no hay un destino correcto ni incorrecto hoy.", icon: "walk" },
+  { type: "recuerdo", text: "recordá la última vez que te reíste hasta llorar.", hint: "quedáte un momento con esa sensación.", icon: "memory" },
+  { type: "invitación sensorial", text: "escuchá el sonido más lejano que puedas percibir ahora.", hint: "cerrá los ojos si querés.", icon: "ear" },
+  { type: "frase poética", text: "el presente es el único lugar donde vivís.", hint: "brian eno", icon: "quote" },
+  { type: "acción pequeña", text: "preparáte algo caliente para tomar. sin apuro.", hint: "no hay nada urgente en los próximos diez minutos.", icon: "walk" },
+  { type: "recuerdo", text: "pensá en alguien que te quiera y mandále un mensaje.", hint: "no tiene que ser largo. basta con aparecer.", icon: "memory" },
+  { type: "invitación sensorial", text: "tocá algo que tenga una textura interesante cerca tuyo.", hint: "¿qué sentís?", icon: "ear" },
+  { type: "frase poética", text: "no tenés que estar bien todo el tiempo.", hint: "estar acá ya es suficiente.", icon: "quote" },
+];
+
+const icons = {
+  walk: '<path d="M17 8C8 10 5.9 16.17 3.82 19.33a1 1 0 001.64 1.14C7 18.9 8.5 17 12 16c-1 3 1 5 3 6 0-3 2.5-4.5 4-6 1.5-1.5 2-3.5 2-5 0-3-2-5.5-4-7z"/>',
+  memory: '<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/>',
+  ear: '<path d="M6 12a6 6 0 0112 0c0 4-3 7-3 7H9s-3-3-3-7z"/><path d="M9 19c0 1.1.9 2 2 2h2a2 2 0 002-2v-1H9v1z"/>',
+  quote: '<path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/>',
+};
+
+let lastIndex = -1;
+
+function setAuthMode(mode) {
+  const isReg = mode === 'registro';
+  document.getElementById('auth-title').textContent = isReg ? 'crear cuenta' : 'bienvenida de nuevo';
+  document.getElementById('auth-sub').textContent = isReg ? 'para guardar tus cartas y preferencias' : 'nos alegra que vuelvas';
+  document.getElementById('tab-registro').classList.toggle('active', isReg);
+  document.getElementById('tab-ingreso').classList.toggle('active', !isReg);
+  document.getElementById('field-nombre').style.display = isReg ? '' : 'none';
+  document.getElementById('auth-cta').textContent = isReg ? 'crear mi cuenta' : 'ingresar';
+}
+
+
+function goTo(page) {
+  document.querySelectorAll('.screen-page').forEach(p => p.classList.remove('active'));
+  document.getElementById('p-' + page).classList.add('active');
+}
+
+function showCard() {
+  let idx;
+  do { idx = Math.floor(Math.random() * cards.length); } while (idx === lastIndex && cards.length > 1);
+  lastIndex = idx;
+  const c = cards[idx];
+  document.getElementById('card-badge').textContent = c.type;
+  document.getElementById('card-text').textContent = c.text;
+  document.getElementById('card-hint').textContent = c.hint;
+  document.getElementById('card-svg').innerHTML = icons[c.icon];
+  goTo('card');
+}
+
+function markDone() {
+  const c = cards[lastIndex];
+  const list = document.getElementById('history-list');
+  const item = document.createElement('div');
+  item.className = 'history-item';
+  const now = new Date();
+  const time = now.getHours() + ':' + String(now.getMinutes()).padStart(2,'0');
+  item.innerHTML = `
+    <div class="history-dot">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#8B6A52" stroke-width="1.5">${icons[c.icon]}</svg>
+    </div>
+    <div class="history-text">
+      <p>${c.text}</p>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+        <span class="history-date">hoy, ${time}</span>
+        <span class="done-tag">tomada</span>
+      </div>
+    </div>`;
+  list.prepend(item);
+  goTo('home');
+}
+
+setTimeout(function() { goTo('welcome'); }, 2200);
+</script>
+</body>
+</html>
